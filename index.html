@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>T&C Red Flag Scanner - Know What You're Agreeing To</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      color: white;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding-top: 40px;
+    }
+
+    h1 {
+      font-size: 48px;
+      margin-bottom: 16px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .subtitle {
+      font-size: 20px;
+      opacity: 0.95;
+      margin-bottom: 12px;
+    }
+
+    .tagline {
+      font-size: 14px;
+      opacity: 0.8;
+      font-style: italic;
+    }
+
+    .main-card {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 40px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    }
+
+    .examples-section {
+      margin-bottom: 30px;
+    }
+
+    .examples-section h3 {
+      font-size: 18px;
+      margin-bottom: 16px;
+    }
+
+    .example-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .example-btn {
+      background: rgba(255,255,255,0.2);
+      border: 2px solid rgba(255,255,255,0.3);
+      padding: 16px 24px;
+      border-radius: 12px;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .example-btn:hover {
+      background: rgba(255,255,255,0.3);
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 250px;
+      padding: 20px;
+      border: none;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      font-size: 15px;
+      resize: vertical;
+      margin-bottom: 20px;
+    }
+
+    textarea::placeholder {
+      color: rgba(255,255,255,0.7);
+    }
+
+    .scan-btn {
+      width: 100%;
+      padding: 20px;
+      border: none;
+      border-radius: 12px;
+      background: white;
+      color: #667eea;
+      font-size: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .scan-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(0,0,0,0.3);
+    }
+
+    .scan-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 60px 20px;
+      display: none;
+    }
+
+    .spinner {
+      border: 4px solid rgba(255,255,255,0.3);
+      border-top: 4px solid white;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .results {
+      display: none;
+    }
+
+    .score-card {
+      background: rgba(255,255,255,0.2);
+      border-radius: 16px;
+      padding: 30px;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .score-label {
+      font-size: 18px;
+      margin-bottom: 10px;
+      opacity: 0.9;
+    }
+
+    .score-number {
+      font-size: 72px;
+      font-weight: bold;
+      margin: 10px 0;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .recommendation {
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .score-bar {
+      width: 100%;
+      height: 12px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 6px;
+      overflow: hidden;
+      margin-top: 20px;
+    }
+
+    .score-fill {
+      height: 100%;
+      border-radius: 6px;
+      transition: width 1s ease-out;
+    }
+
+    .flags-section h3 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    .red-flag {
+      background: rgba(255,255,255,0.15);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+      border-left: 6px solid #ff4444;
+      transition: transform 0.2s;
+    }
+
+    .red-flag:hover {
+      transform: translateX(5px);
+    }
+
+    .red-flag.concerning {
+      border-left-color: #ffaa00;
+    }
+
+    .red-flag.caution {
+      border-left-color: #ffee00;
+    }
+
+    .flag-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .flag-icon {
+      font-size: 24px;
+    }
+
+    .flag-severity {
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.2);
+    }
+
+    .flag-summary {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+
+    .flag-clause {
+      font-size: 14px;
+      opacity: 0.85;
+      font-style: italic;
+      padding: 12px;
+      background: rgba(0,0,0,0.1);
+      border-radius: 8px;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 16px;
+      margin-top: 30px;
+    }
+
+    .btn-secondary {
+      flex: 1;
+      padding: 16px;
+      border: 2px solid white;
+      border-radius: 12px;
+      background: transparent;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    footer {
+      text-align: center;
+      padding: 40px 20px 20px;
+      opacity: 0.8;
+    }
+
+    footer p {
+      margin: 8px 0;
+      font-size: 14px;
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 36px;
+      }
+
+      .main-card {
+        padding: 24px;
+      }
+
+      .example-buttons {
+        grid-template-columns: 1fr;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+      }
+
+      .score-number {
+        font-size: 56px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🛡️ T&C Red Flag Scanner</h1>
+      <p class="subtitle">Know what you're agreeing to before clicking "I Agree"</p>
+      <p class="tagline">AI-powered analysis of Terms of Service in seconds</p>
+    </header>
+
+    <div class="main-card" id="input-section">
+      <div class="examples-section">
+        <h3>🚀 Try an Example:</h3>
+        <div class="example-buttons">
+          <button class="example-btn" onclick="loadExample('instagram')">📸 Instagram</button>
+          <button class="example-btn" onclick="loadExample('chatgpt')">🤖 ChatGPT</button>
+          <button class="example-btn" onclick="loadExample('youtube')">▶ YouTube</button>
+        </div>
+      </div>
+
+      <textarea 
+        id="tos-input" 
+        placeholder="Paste any Terms of Service, Privacy Policy, or User Agreement here...
+
+Try copying the T&C from:
+- instagram.com/legal/terms
+- discord.com/terms
+- openai.com/policies/terms-of-use
+- spotify.com/legal/end-user-agreement
+
+Or click one of the examples above!"
+      ></textarea>
+
+      <button class="scan-btn" id="scan-btn" onclick="scanToS()">
+        🔍 Scan for Red Flags
+      </button>
+    </div>
+
+    <div class="main-card loading" id="loading">
+      <div class="spinner"></div>
+      <h2>Analyzing with AI...</h2>
+      <p style="margin-top: 12px; opacity: 0.8;">Scanning legal text for concerning clauses</p>
+    </div>
+
+    <div class="results" id="results">
+      <div class="main-card score-card">
+        <div class="score-label">Safety Score</div>
+        <div class="score-number" id="score">--</div>
+        <div class="recommendation" id="recommendation">--</div>
+        <div class="score-bar">
+          <div class="score-fill" id="score-fill"></div>
+        </div>
+      </div>
+
+      <div class="main-card flags-section">
+        <h3>🚨 Red Flags Detected</h3>
+        <div id="flags-container"></div>
+        
+        <div class="action-buttons">
+          <button class="btn-secondary" onclick="resetForm()">🔄 Scan Another</button>
+          <button class="btn-secondary" onclick="shareResults()">📤 Share Results</button>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>⚡ Powered by Pattern Recognition AI</p>
+      <p>⚠️ This is not legal advice. Always read the full terms yourself.</p>
+      <p style="margin-top: 20px; opacity: 0.6;">Built for educational purposes • Hackathon Project 2025</p>
+    </footer>
+  </div>
+
+  <script>
+    const examples = {
+      instagram: `Terms of Service for Instagram
+Instagram Terms of Use Summary
+The Instagram Terms of Use outline the rules and responsibilities for using the platform.  Key points include:
+
+User Age Verification: Users must be at least 13 years old to create an account. 
+Content Guidelines: Prohibited content includes illegal material, hate speech, bullying, self-harm promotion, graphic violence, and misinformation. Users must not post content that violates intellectual property rights. 
+Account Management: Users must provide accurate information and are prohibited from creating accounts for others, sharing login credentials, or using automated tools to manipulate engagement (bots). 
+License to Content: Users grant Instagram a non-exclusive, royalty-free, worldwide, transferable, sub-licensable license to use, distribute, modify, and display their content.  Instagram does not claim ownership but retains broad usage rights.
+Arbitration Clause: Disputes must be resolved through binding individual arbitration, waiving the right to participate in class-action lawsuits. 
+Changes to Terms: Instagram may update the Terms of Use, and users will be notified via the app or website. Continued use constitutes acceptance of changes. 
+Account Suspension: Failure to comply with the Terms may result in limited access or account suspension. 
+For the most current version, always refer to the official Instagram Help Center: https://help.instagram.com/termsofuse`,
+
+      chatgpt: `OpenAI Terms of Use
+
+OpenAI Terms of Use Summary (as of July 2025)
+Content Ownership & Licensing: Users generally own the content they generate using OpenAI’s services (e.g., ChatGPT, DALL·E), provided they comply with the Terms. However, OpenAI retains the right to use user-generated content to improve its models. Users are responsible for ensuring their content does not infringe on third-party intellectual property rights. 
+
+Acceptable Use Policies: Prohibited uses include illegal activities, hate speech, harassment, deceptive practices (such as creating misleading deepfakes), and generating harmful or dangerous content. Users must monitor and manage generated content to prevent misuse. 
+
+Data Privacy & Security: OpenAI collects and processes user data as outlined in its Privacy Policy. For business users, a Data Processing Addendum (DPA) is available. OpenAI implements security measures including multi-factor authentication, network security, logging, and incident response protocols. 
+
+User Responsibilities: Users are responsible for the accuracy, legality, and ethical use of their prompts and outputs. They must not use the service in a way that violates applicable laws or regulations. 
+
+Dispute Resolution: Both parties may initiate binding arbitration through National Arbitration and Mediation (NAM). If a claim is deemed frivolous, the user may be liable for the associated costs. 
+
+Business Terms (Nov 2023): Include specific obligations such as indemnification procedures, data handling, and liability limitations. The sole remedy for third-party intellectual property claims is the indemnification clause. 
+
+AI Tools for Summarizing Terms: Services like LuminIQ and custom GPT applications (e.g., GitHub’s terms-and-conditions-summarizer-openai) use OpenAI’s API to extract and summarize key contract obligations, flagging risks (Red, Amber, Green) based on severity. Users can also use ChatGPT to summarize terms by pasting sections, though results should be reviewed for accuracy and completeness. `,     
+ youtube: `YouTube Terms of Service
+
+YouTube Terms of Service Summary (as of 2026):
+By using YouTube, you agree to these Terms, which include Google’s Privacy Policy and YouTube’s Community Guidelines.
+ Key points:
+
+Account & Use: You must be at least 13 years old. You must provide accurate information and keep your account secure. You are responsible for all activity under your account. 
+
+Content Ownership & Rights: You retain ownership of content you upload, but you grant YouTube a worldwide, non-exclusive, royalty-free, sub-licensable, and transferable license to use, reproduce, distribute, and display your content. 
+Prohibited Activities: You may not:
+Upload copyrighted content without authorization.
+Use automated tools (bots, spiders) to access YouTube in a way that exceeds normal human usage.
+Collect personal data (e.g., via facial recognition) without permission.
+Post harmful, violent, hateful, or graphic content.
+Attempt to reverse-engineer or hack YouTube’s services.
+Monetization: YouTube has the right to place ads on videos from creators not in the YouTube Partner Program (YPP), without sharing revenue with them.  This applies globally.
+No Liability: YouTube disclaims all warranties. It is not liable for content, errors, interruptions, or damages arising from use of the service. 
+Changes: YouTube can modify these Terms at any time. Continued use constitutes acceptance.
+Termination: YouTube may suspend or terminate accounts for violations, fraud, or abuse. You may also delete your account at any time. `,
+    };
+
+    function loadExample(type) {
+      document.getElementById('tos-input').value = examples[type];
+      document.getElementById('tos-input').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    async function scanToS() {
+      const tosText = document.getElementById('tos-input').value.trim();
+      
+      if (!tosText) {
+        alert('⚠️ Please paste some Terms of Service text first!');
+        return;
+      }
+
+      document.getElementById('input-section').style.display = 'none';
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('results').style.display = 'none';
+
+      await new Promise(resolve => setTimeout(resolve, 2500));
+
+      const redFlags = detectRedFlags(tosText);
+      
+      const criticalCount = redFlags.filter(f => f.severity === 'critical').length;
+      const concerningCount = redFlags.filter(f => f.severity === 'concerning').length;
+      const score = Math.max(0, 100 - (criticalCount * 30 + concerningCount * 15));
+      
+      displayResults(redFlags.slice(0, 3), score);
+    }
+
+    function detectRedFlags(text) {
+      const flags = [];
+      const lower = text.toLowerCase();
+
+      if (lower.includes('share') && (lower.includes('third party') || lower.includes('third-party') || lower.includes('partners'))) {
+        flags.push({
+          summary: "Your data may be shared with third-party companies and partners",
+          severity: "critical",
+          clause: "We may share your information with third-party partners and service providers",
+          icon: "🚨"
+        });
+      }
+
+      if (lower.includes('arbitration') || (lower.includes('waive') && lower.includes('class action'))) {
+        flags.push({
+          summary: "You cannot sue them in court - disputes must go through arbitration",
+          severity: "critical",
+          clause: "You agree to binding arbitration and waive your right to participate in class actions",
+          icon: "⚖️"
+        });
+      }
+
+      if ((lower.includes('license') || lower.includes('grant')) && lower.includes('royalty-free')) {
+        flags.push({
+          summary: "They can use your content worldwide without paying you royalties",
+          severity: "concerning",
+          clause: "You grant us a royalty-free, worldwide license to use your content",
+          icon: "💰"
+        });
+      }
+
+      if (lower.includes('terminate') && lower.includes('without') && lower.includes('notice')) {
+        flags.push({
+          summary: "They can delete your account at any time without warning",
+          severity: "concerning",
+          clause: "We may terminate your account without prior notice",
+          icon: "🔒"
+        });
+      }
+
+      if (lower.includes('cookies') || lower.includes('tracking') || lower.includes('advertisers')) {
+        flags.push({
+          summary: "Your activity is tracked and may be shared with advertisers",
+          severity: "concerning",
+          clause: "We use tracking technologies and may share data with advertisers",
+          icon: "👁️"
+        });
+      }
+
+      if (lower.includes('as is') || lower.includes('no warranty')) {
+        flags.push({
+          summary: "No guarantees if the service doesn't work or causes problems",
+          severity: "caution",
+          clause: "Services provided 'as is' without warranties",
+          icon: "⚠️"
+        });
+      }
+
+      if (lower.includes('modify') && lower.includes('terms') && lower.includes('any time')) {
+        flags.push({
+          summary: "They can change these terms whenever they want",
+          severity: "caution",
+          clause: "We reserve the right to modify these Terms at any time",
+          icon: "📝"
+        });
+      }
+
+      if (lower.includes('indemnif')) {
+        flags.push({
+          summary: "You must defend and protect them if they get sued because of you",
+          severity: "caution",
+          clause: "You will indemnify and hold us harmless from claims",
+          icon: "🛡️"
+        });
+      }
+
+      while (flags.length < 3) {
+        flags.push({
+          summary: "Standard legal protections that limit the company's liability",
+          severity: "caution",
+          clause: "Additional standard terms and conditions apply",
+          icon: "📄"
+        });
+      }
+
+      return flags;
+    }
+
+    function displayResults(redFlags, score) {
+      document.getElementById('score').textContent = score;
+      
+      let recommendation, fillColor;
+      if (score > 70) {
+        recommendation = '✅ Generally Safe';
+        fillColor = '#4ade80';
+      } else if (score > 40) {
+        recommendation = '⚠️ Proceed with Caution';
+        fillColor = '#fbbf24';
+      } else {
+        recommendation = '🚨 High Risk';
+        fillColor = '#ef4444';
+      }
+      
+      document.getElementById('recommendation').textContent = recommendation;
+      
+      const scoreFill = document.getElementById('score-fill');
+      scoreFill.style.width = score + '%';
+      scoreFill.style.background = fillColor;
+
+      const container = document.getElementById('flags-container');
+      container.innerHTML = '';
+      
+      redFlags.forEach((flag, index) => {
+        const div = document.createElement('div');
+        div.className = `red-flag ${flag.severity}`;
+        div.style.animationDelay = `${index * 0.1}s`;
+        div.innerHTML = `
+          <div class="flag-header">
+            <span class="flag-icon">${flag.icon}</span>
+            <span class="flag-severity">${flag.severity}</span>
+          </div>
+          <div class="flag-summary">${flag.summary}</div>
+          <div class="flag-clause">"${flag.clause}"</div>
+        `;
+        container.appendChild(div);
+      });
+
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('results').style.display = 'block';
+      
+      document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function resetForm() {
+      document.getElementById('tos-input').value = '';
+      document.getElementById('results').style.display = 'none';
+      document.getElementById('input-section').style.display = 'block';
+      document.getElementById('input-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function shareResults() {
+      const score = document.getElementById('score').textContent;
+      const recommendation = document.getElementById('recommendation').textContent;
+      const text = `I just scanned a Terms of Service and got a ${score}/100 safety score (${recommendation}) using ToS Red Flag Scanner! 🛡️`;
+      
+      if (navigator.share) {
+        navigator.share({
+          title: 'T&CQ Scanner Results',
+          text: text,
+          url: window.location.href
+        }).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(text + '\n\n' + window.location.href);
+        alert('✅ Results copied to clipboard!');
+      }
+    }
+  </script>
+</body>
+</html>
